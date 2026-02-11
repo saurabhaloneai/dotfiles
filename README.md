@@ -2,6 +2,8 @@
 
 helix + zellij workflow. works on macOS and Ubuntu (GPU VMs over SSH).
 
+![workflow](assets/workflow.png)
+
 > other tools i use on macOS:
 
 1. [loop](https://github.com/MrKai77/Loop) for window management
