@@ -1,24 +1,44 @@
 #!/bin/bash
+# Ubuntu/Linux setup
+set -e
 
-echo "Installing dependencies..."
+echo "Setting up dotfiles for Linux..."
+
 sudo apt update
-sudo apt install -y git tmux curl build-essential
+sudo apt install -y git curl build-essential
 
-echo "Installing latest Neovim via snap..."
-sudo snap install nvim --classic
+# helix
+if ! command -v hx &>/dev/null; then
+    echo "Installing Helix..."
+    sudo add-apt-repository -y ppa:maveonair/helix-editor
+    sudo apt update
+    sudo apt install -y helix
+fi
 
-echo "Creating config directories..."
-mkdir -p ~/.config
+# zellij
+if ! command -v zellij &>/dev/null; then
+    echo "Installing Zellij..."
+    ZELLIJ_VER=$(curl -s https://api.github.com/repos/zellij-org/zellij/releases/latest | grep tag_name | cut -d '"' -f4)
+    curl -fsSL "https://github.com/zellij-org/zellij/releases/download/${ZELLIJ_VER}/zellij-x86_64-unknown-linux-musl.tar.gz" | tar xz -C /tmp
+    sudo mv /tmp/zellij /usr/local/bin/
+    sudo chmod +x /usr/local/bin/zellij
+fi
 
-echo "Setting up symlinks..."
+# lazygit
+if ! command -v lazygit &>/dev/null; then
+    echo "Installing lazygit..."
+    LAZYGIT_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep tag_name | cut -d '"' -f4 | sed 's/^v//')
+    curl -fsSL "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VER}/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz" | tar xz -C /tmp lazygit
+    sudo mv /tmp/lazygit /usr/local/bin/
+fi
+
+echo "Linking configs..."
+mkdir -p ~/.config/helix ~/.config/zellij
+
+ln -sf ~/dotfiles/helix/config.toml ~/.config/helix/config.toml
+ln -sf ~/dotfiles/helix/languages.toml ~/.config/helix/languages.toml
+ln -sf ~/dotfiles/zellij/config.kdl ~/.config/zellij/config.kdl
 ln -sf ~/dotfiles/nvim ~/.config/nvim
-ln -sf ~/dotfiles/tmux/.tmux.conf ~/.tmux.conf
 
-echo "Installing TPM (Tmux Plugin Manager)..."
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm 2>/dev/null || echo "TPM already installed"
-
-echo "✅ Dotfiles setup complete!"
-echo "📝 Next steps:"
-echo "1. Open nvim - plugins will auto-install"
-echo "2. In tmux, press Ctrl+a then I to install tmux plugins"
-nvim --version
+echo ""
+echo "Done! Run 'zellij' to start, 'hx .' to edit."
